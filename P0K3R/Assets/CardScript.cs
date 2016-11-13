@@ -21,6 +21,11 @@ public class CardScript : MonoBehaviour {
 	
 	}
 
+	public void SetActive (bool state) {
+
+		gameObject.SetActive (state);
+	}
+
 	public void SetCard (Card card) {
 
 		_currentCard = card;
@@ -34,20 +39,15 @@ public class CardScript : MonoBehaviour {
 		}
 	}
 
-	public void HideCard () {
+	public void ShowCard (bool state) {
 
 		if (_currentCard == Card.Empty)
 			return;
 
-		SetFace (Card.Back);
-	}
-
-	public void ShowCard () {
-
-		if (_currentCard == Card.Empty)
-			return;
-
-		SetFace (_currentCard);
+		if (state)
+			SetFace (_currentCard);
+		else
+			SetFace (Card.Back);
 	}
 
 	private void SetFace (Card card) {

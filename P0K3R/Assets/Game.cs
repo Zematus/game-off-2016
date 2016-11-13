@@ -66,15 +66,28 @@ public enum Card {
 
 public class Player {
 
+	public int Index;
+
 	public Card Card1;
 	public Card Card2;
 
-	public int Cash;
+	public int Cash = 0;
+
+	public bool IsActive = false;
+	public bool IsDealer = false;
+
+	public int Bet = 0;
 
 	public void Reset () {
 	
 		Card1 = Card.Empty;
 		Card2 = Card.Empty;
+	}
+
+	public void SetBet (int bet) {
+
+		Cash -= bet - Bet;
+		Bet = bet;
 	}
 }
 
@@ -115,6 +128,14 @@ public class Game {
 
 	public Community Community = new Community ();
 
+	public int MinimumBet = 50;
+	public int SmallBlind = 25;
+	public int BigBlind = 50;
+
+	public int DealerIndex = 0;
+
+	public Player CurrentPlayer = null;
+
 	public Game () {
 	
 		Players [0] = Player1;
@@ -127,23 +148,92 @@ public class Game {
 
 	public void Initialize () {
 
-		ResetDeck ();
-
 		for (int i = 0; i < 6; i++) {
 
 			Player player = Players[i];
 
-			player.Card1 = GetRandomCardFromDeck ();
-			player.Card2 = GetRandomCardFromDeck ();
-
 			player.Cash = 500;
+			player.IsActive = true;
+			player.Index = i;
 		}
 
+		SelectRandomDealer ();
+
+		SetNextPlay ();
+	}
+
+	public void SetNextPlay () {
+
+		ResetDeck ();
+
+		// Deal first card to each active player
+		for (int i = 0; i < 6; i++) {
+
+			int index = (i + DealerIndex) % 6;
+
+			Player player = Players[index];
+
+			if (!player.IsActive)
+				continue;
+
+			player.Card1 = GetRandomCardFromDeck ();
+		}
+
+		// Deal second card to each active player
+		for (int i = 0; i < 6; i++) {
+
+			int index = (i + DealerIndex) % 6;
+
+			Player player = Players[index];
+
+			if (!player.IsActive)
+				continue;
+
+			player.Card2 = GetRandomCardFromDeck ();
+		}
+
+		// Burn a card
+		GetRandomCardFromDeck ();
+
+		// Deal flop
 		Community.Card1 = GetRandomCardFromDeck ();
 		Community.Card2 = GetRandomCardFromDeck ();
 		Community.Card3 = GetRandomCardFromDeck ();
+
+		// Burn a card
+		GetRandomCardFromDeck ();
+
+		// Deal turn
 		Community.Card4 = GetRandomCardFromDeck ();
+
+		// Burn a card
+		GetRandomCardFromDeck ();
+
+		// Deal river
 		Community.Card5 = GetRandomCardFromDeck ();
+
+		// Set Small Blind
+		SetNextPlayer ().SetBet (SmallBlind);
+
+		// Set Big Blind
+		SetNextPlayer ().SetBet (BigBlind);
+
+		// Set Current Player
+		SetNextPlayer ();
+	}
+
+	public Player SetNextPlayer () {
+	
+		int index = (CurrentPlayer.Index + 1) % 6;
+
+		while (!Players [index].IsActive) {
+		
+			index++;
+		}
+
+		CurrentPlayer = Players [index];
+
+		return CurrentPlayer;
 	}
 
 	public void ResetDeck () {
@@ -173,5 +263,31 @@ public class Game {
 		DeckCardCount--;
 
 		return card;
+	}
+
+	public void SelectRandomDealer () {
+
+		List<Player> activePlayers = new List<Player> ();
+
+		foreach (Player player in Players) {
+		
+			if (player.IsActive) {
+			
+				activePlayers.Add (player);
+			}
+		}
+
+		int index = Random.Range (0, activePlayers.Count);
+
+		for (int i = 0; i < activePlayers.Count; i++) {
+
+			activePlayers [i].IsDealer = index == i;
+
+			if (index == i) {
+
+				CurrentPlayer = activePlayers [i];
+				DealerIndex = CurrentPlayer.Index;
+			}
+		}
 	}
 }

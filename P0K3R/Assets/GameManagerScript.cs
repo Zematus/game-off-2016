@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class GameManagerScript : MonoBehaviour {
@@ -12,6 +13,10 @@ public class GameManagerScript : MonoBehaviour {
 
 	public CommunityScript Community;
 
+	public Text MinimumBetText;
+	public Text SmallBlindText;
+	public Text BigBlindText;
+
 	public static Game CurrentGame = new Game ();
 
 	// Use this for initialization
@@ -19,12 +24,14 @@ public class GameManagerScript : MonoBehaviour {
 
 		CurrentGame.Initialize ();
 
-		Player1.ShowDealerButton (true);
-		Player2.ShowDealerButton (false);
-		Player3.ShowDealerButton (false);
-		Player4.ShowDealerButton (false);
-		Player5.ShowDealerButton (false);
-		Player6.ShowDealerButton (false);
+		SetBetBlindTexts ();
+
+		Player1.ShowDealerButton (CurrentGame.Player1.IsDealer);
+		Player2.ShowDealerButton (CurrentGame.Player2.IsDealer);
+		Player3.ShowDealerButton (CurrentGame.Player3.IsDealer);
+		Player4.ShowDealerButton (CurrentGame.Player4.IsDealer);
+		Player5.ShowDealerButton (CurrentGame.Player5.IsDealer);
+		Player6.ShowDealerButton (CurrentGame.Player6.IsDealer);
 
 		Player1.SetCash (CurrentGame.Player1.Cash);
 		Player2.SetCash (CurrentGame.Player2.Cash);
@@ -32,6 +39,13 @@ public class GameManagerScript : MonoBehaviour {
 		Player4.SetCash (CurrentGame.Player4.Cash);
 		Player5.SetCash (CurrentGame.Player5.Cash);
 		Player6.SetCash (CurrentGame.Player6.Cash);
+
+		Player1.SetBet (CurrentGame.Player1.Bet);
+		Player2.SetBet (CurrentGame.Player2.Bet);
+		Player3.SetBet (CurrentGame.Player3.Bet);
+		Player4.SetBet (CurrentGame.Player4.Bet);
+		Player5.SetBet (CurrentGame.Player5.Bet);
+		Player6.SetBet (CurrentGame.Player6.Bet);
 
 		Player1.Card1.SetCard (CurrentGame.Player1.Card1);
 		Player1.Card2.SetCard (CurrentGame.Player1.Card2);
@@ -52,29 +66,36 @@ public class GameManagerScript : MonoBehaviour {
 		Community.Card4.SetCard (CurrentGame.Community.Card4);
 		Community.Card5.SetCard (CurrentGame.Community.Card5);
 
-		Player1.Card1.ShowCard ();
-		Player1.Card2.ShowCard ();
+		Player1.Card1.ShowCard (true);
+		Player1.Card2.ShowCard (true);
 
-		Player2.Card1.HideCard ();
-		Player2.Card2.HideCard ();
-		Player3.Card1.HideCard ();
-		Player3.Card2.HideCard ();
-		Player4.Card1.HideCard ();
-		Player4.Card2.HideCard ();
-		Player5.Card1.HideCard ();
-		Player5.Card2.HideCard ();
-		Player6.Card1.HideCard ();
-		Player6.Card2.HideCard ();
+		Player2.Card1.ShowCard (false);
+		Player2.Card2.ShowCard (false);
+		Player3.Card1.ShowCard (false);
+		Player3.Card2.ShowCard (false);
+		Player4.Card1.ShowCard (false);
+		Player4.Card2.ShowCard (false);
+		Player5.Card1.ShowCard (false);
+		Player5.Card2.ShowCard (false);
+		Player6.Card1.ShowCard (false);
+		Player6.Card2.ShowCard (false);
 
-		Community.Card1.HideCard ();
-		Community.Card2.HideCard ();
-		Community.Card3.HideCard ();
-		Community.Card4.HideCard ();
-		Community.Card5.HideCard ();
+		Community.Card1.ShowCard (false);
+		Community.Card2.ShowCard (false);
+		Community.Card3.ShowCard (false);
+		Community.Card4.ShowCard (false);
+		Community.Card5.ShowCard (false);
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	
+	}
+
+	public void SetBetBlindTexts () {
+
+		MinimumBetText.text = "Minimum Bet:\n<b>$" + CurrentGame.MinimumBet.ToString () + "</b>";
+		SmallBlindText.text = "Small Blind:\n<b>$" + CurrentGame.SmallBlind.ToString () + "</b>";
+		BigBlindText.text = "Big Blind:\n<b>$" + CurrentGame.BigBlind.ToString () + "</b>";
 	}
 }
