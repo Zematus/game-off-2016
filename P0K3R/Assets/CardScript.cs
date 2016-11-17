@@ -39,7 +39,7 @@ public class CardScript : MonoBehaviour {
 		}
 	}
 
-	public void ShowCard (bool state) {
+	public void Show (bool state) {
 
 		if (_currentCard == Card.Empty)
 			return;

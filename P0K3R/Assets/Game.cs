@@ -64,7 +64,17 @@ public enum Card {
 	Empty = 53
 }
 
+public enum PlayPhase {
+
+	Start = 0,
+	Flop = 1,
+	Turn = 2,
+	River = 3
+}
+
 public class Player {
+
+	public Game CurrentGame;
 
 	public int Index;
 
@@ -75,6 +85,8 @@ public class Player {
 
 	public bool IsActive = false;
 	public bool IsDealer = false;
+	public bool HasFolded = false;
+	public bool HasRaised = false;
 
 	public int Bet = 0;
 
@@ -88,6 +100,39 @@ public class Player {
 
 		Cash -= bet - Bet;
 		Bet = bet;
+	}
+
+	public void Fold () {
+
+		HasFolded = true;
+		PushBetToPot ();
+	}
+
+	public void PushBetToPot () {
+
+		CurrentGame.AddToPot (Bet);
+
+		HasRaised = false;
+		Bet = 0;
+	}
+
+	public void Raise (int newValue) {
+
+		HasRaised = true;
+		SetBet (newValue);
+		CurrentGame.SetCall (Bet);
+		CurrentGame.StopIndex = Index;
+	}
+
+	public void Call (int newValue) {
+
+		HasRaised = false;
+		SetBet (newValue);
+	}
+
+	public void Check () {
+
+		HasRaised = false;
 	}
 }
 
@@ -128,11 +173,18 @@ public class Game {
 
 	public Community Community = new Community ();
 
+	public PlayPhase Phase = PlayPhase.Start;
+
 	public int MinimumBet = 50;
 	public int SmallBlind = 25;
 	public int BigBlind = 50;
 
+	public int Pot = 0;
+
+	public int CurrentCall = 50;
+
 	public int DealerIndex = 0;
+	public int StopIndex = 0;
 
 	public Player CurrentPlayer = null;
 
@@ -155,6 +207,7 @@ public class Game {
 			player.Cash = 500;
 			player.IsActive = true;
 			player.Index = i;
+			player.CurrentGame = this;
 		}
 
 		SelectRandomDealer ();
@@ -220,18 +273,57 @@ public class Game {
 
 		// Set Current Player
 		SetNextPlayer ();
+		StopIndex = CurrentPlayer.Index;
 	}
 
 	public Player SetNextPlayer () {
 	
 		int index = (CurrentPlayer.Index + 1) % 6;
 
-		while (!Players [index].IsActive) {
+		Player player = Players [index];
+
+		bool stop = index == StopIndex;
+
+		while (!player.IsActive || player.HasFolded) {
 		
-			index++;
+			index = (index + 1) % 6;
+			player = Players [index];
+
+			stop |= index == StopIndex;
 		}
 
-		CurrentPlayer = Players [index];
+		if (stop) {
+
+			CurrentCall = 0;
+
+			if (Phase == PlayPhase.River) {
+			
+				CurrentPlayer = null;
+				return CurrentPlayer;
+			}
+
+			Phase = (PlayPhase)((int)Phase + 1);
+
+			foreach (Player p in Players) {
+			
+				if (p.IsActive && !p.HasFolded) {
+					p.PushBetToPot ();
+				}
+			}
+
+			index = (DealerIndex + 1) % 6;
+			player = Players [index];
+
+			while (!player.IsActive || player.HasFolded) {
+
+				index = (index + 1) % 6;
+				player = Players [index];
+			}
+
+			StopIndex = player.Index;
+		}
+
+		CurrentPlayer = player;
 
 		return CurrentPlayer;
 	}
@@ -289,5 +381,15 @@ public class Game {
 				DealerIndex = CurrentPlayer.Index;
 			}
 		}
+	}
+
+	public void SetCall (int value) {
+	
+		CurrentCall = value;
+	}
+
+	public void AddToPot (int value) {
+
+		Pot += value;
 	}
 }

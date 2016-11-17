@@ -16,6 +16,9 @@ public class GameManagerScript : MonoBehaviour {
 	public Text MinimumBetText;
 	public Text SmallBlindText;
 	public Text BigBlindText;
+	public Text PotText;
+
+	public ActionPanelScript ActionPanel;
 
 	public static Game CurrentGame = new Game ();
 
@@ -24,41 +27,24 @@ public class GameManagerScript : MonoBehaviour {
 
 		CurrentGame.Initialize ();
 
-		SetBetBlindTexts ();
+		ActionPanel.SetActive (false);
 
-		Player1.ShowDealerButton (CurrentGame.Player1.IsDealer);
-		Player2.ShowDealerButton (CurrentGame.Player2.IsDealer);
-		Player3.ShowDealerButton (CurrentGame.Player3.IsDealer);
-		Player4.ShowDealerButton (CurrentGame.Player4.IsDealer);
-		Player5.ShowDealerButton (CurrentGame.Player5.IsDealer);
-		Player6.ShowDealerButton (CurrentGame.Player6.IsDealer);
+		UpdateBetBlindTexts ();
+		UpdatePotText ();
 
-		Player1.SetCash (CurrentGame.Player1.Cash);
-		Player2.SetCash (CurrentGame.Player2.Cash);
-		Player3.SetCash (CurrentGame.Player3.Cash);
-		Player4.SetCash (CurrentGame.Player4.Cash);
-		Player5.SetCash (CurrentGame.Player5.Cash);
-		Player6.SetCash (CurrentGame.Player6.Cash);
+		Player1.SetPlayer (CurrentGame.Player1);
+		Player2.SetPlayer (CurrentGame.Player2);
+		Player3.SetPlayer (CurrentGame.Player3);
+		Player4.SetPlayer (CurrentGame.Player4);
+		Player5.SetPlayer (CurrentGame.Player5);
+		Player6.SetPlayer (CurrentGame.Player6);
 
-		Player1.SetBet (CurrentGame.Player1.Bet);
-		Player2.SetBet (CurrentGame.Player2.Bet);
-		Player3.SetBet (CurrentGame.Player3.Bet);
-		Player4.SetBet (CurrentGame.Player4.Bet);
-		Player5.SetBet (CurrentGame.Player5.Bet);
-		Player6.SetBet (CurrentGame.Player6.Bet);
-
-		Player1.Card1.SetCard (CurrentGame.Player1.Card1);
-		Player1.Card2.SetCard (CurrentGame.Player1.Card2);
-		Player2.Card1.SetCard (CurrentGame.Player2.Card1);
-		Player2.Card2.SetCard (CurrentGame.Player2.Card2);
-		Player3.Card1.SetCard (CurrentGame.Player3.Card1);
-		Player3.Card2.SetCard (CurrentGame.Player3.Card2);
-		Player4.Card1.SetCard (CurrentGame.Player4.Card1);
-		Player4.Card2.SetCard (CurrentGame.Player4.Card2);
-		Player5.Card1.SetCard (CurrentGame.Player5.Card1);
-		Player5.Card2.SetCard (CurrentGame.Player5.Card2);
-		Player6.Card1.SetCard (CurrentGame.Player6.Card1);
-		Player6.Card2.SetCard (CurrentGame.Player6.Card2);
+		Player1.UpdateState ();
+		Player2.UpdateState ();
+		Player3.UpdateState ();
+		Player4.UpdateState ();
+		Player5.UpdateState ();
+		Player6.UpdateState ();
 
 		Community.Card1.SetCard (CurrentGame.Community.Card1);
 		Community.Card2.SetCard (CurrentGame.Community.Card2);
@@ -66,25 +52,17 @@ public class GameManagerScript : MonoBehaviour {
 		Community.Card4.SetCard (CurrentGame.Community.Card4);
 		Community.Card5.SetCard (CurrentGame.Community.Card5);
 
-		Player1.Card1.ShowCard (true);
-		Player1.Card2.ShowCard (true);
+		Player1.ShowCards (true);
+		Player2.ShowCards (true);
+		Player3.ShowCards (true);
+		Player4.ShowCards (true);
+		Player5.ShowCards (true);
+		Player6.ShowCards (true);
 
-		Player2.Card1.ShowCard (false);
-		Player2.Card2.ShowCard (false);
-		Player3.Card1.ShowCard (false);
-		Player3.Card2.ShowCard (false);
-		Player4.Card1.ShowCard (false);
-		Player4.Card2.ShowCard (false);
-		Player5.Card1.ShowCard (false);
-		Player5.Card2.ShowCard (false);
-		Player6.Card1.ShowCard (false);
-		Player6.Card2.ShowCard (false);
+		Community.ShowAllCards (false);
 
-		Community.Card1.ShowCard (false);
-		Community.Card2.ShowCard (false);
-		Community.Card3.ShowCard (false);
-		Community.Card4.ShowCard (false);
-		Community.Card5.ShowCard (false);
+		ActionPanel.Setup ();
+		ActionPanel.SetActive (true);
 	}
 	
 	// Update is called once per frame
@@ -92,10 +70,41 @@ public class GameManagerScript : MonoBehaviour {
 	
 	}
 
-	public void SetBetBlindTexts () {
+	public void UpdateBetBlindTexts () {
 
 		MinimumBetText.text = "Minimum Bet:\n<b>$" + CurrentGame.MinimumBet.ToString () + "</b>";
 		SmallBlindText.text = "Small Blind:\n<b>$" + CurrentGame.SmallBlind.ToString () + "</b>";
 		BigBlindText.text = "Big Blind:\n<b>$" + CurrentGame.BigBlind.ToString () + "</b>";
+	}
+
+	public void UpdatePotText () {
+	
+		PotText.text = "Current Pot: <b>$" + CurrentGame.Pot.ToString () + "</b>";
+	}
+
+	public void PassToNextPlayer () {
+
+		ActionPanel.SetActive (false);
+
+		Player player = CurrentGame.SetNextPlayer ();
+
+		if (player == null)
+			return;
+
+		Community.ShowFlop ((int)CurrentGame.Phase >= (int)PlayPhase.Flop);
+		Community.ShowTurn ((int)CurrentGame.Phase >= (int)PlayPhase.Turn);
+		Community.ShowRiver ((int)CurrentGame.Phase >= (int)PlayPhase.River);
+
+		UpdatePotText ();
+
+		Player1.UpdateState ();
+		Player2.UpdateState ();
+		Player3.UpdateState ();
+		Player4.UpdateState ();
+		Player5.UpdateState ();
+		Player6.UpdateState ();
+
+		ActionPanel.Setup ();
+		ActionPanel.SetActive (true);
 	}
 }

@@ -3,6 +3,9 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerScript : MonoBehaviour {
+
+	public GameObject HighlightPanel;
+	public GameObject FoldedPanel;
 	
 	public CardScript Card1;
 	public CardScript Card2;
@@ -12,6 +15,8 @@ public class PlayerScript : MonoBehaviour {
 
 	public Image DealerButton;
 
+	private Player _player;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -20,6 +25,36 @@ public class PlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	
+	}
+
+	public void SetPlayer (Player player) {
+	
+		_player = player;
+	}
+
+	public void UpdateState () {
+	
+		SetCash (_player.Cash);
+		SetBet (_player.Bet);
+		ShowDealerButton (_player.IsDealer);
+
+		Card1.SetCard (_player.Card1);
+		Card2.SetCard (_player.Card2);
+
+		SetFolded (_player.HasFolded);
+
+		Highlight (GameManagerScript.CurrentGame.CurrentPlayer == _player);
+	}
+
+	public void Highlight (bool state) {
+
+		HighlightPanel.SetActive (state);
+	}
+
+	public void ShowCards (bool state) {
+
+		Card1.Show (true);
+		Card2.Show (true);
 	}
 
 	public void SetCash (int amount) {
@@ -48,5 +83,10 @@ public class PlayerScript : MonoBehaviour {
 			Cash.text = "----";
 			Bet.text = "----";
 		}
+	}
+
+	public void SetFolded (bool state) {
+	
+		FoldedPanel.SetActive (state);
 	}
 }
