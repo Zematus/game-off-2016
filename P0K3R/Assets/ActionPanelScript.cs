@@ -132,7 +132,7 @@ public class ActionPanelScript : MonoBehaviour {
 			_player.Call (_modBet);
 		}
 
-		GameManager.PassToNextPlayer ();
+		GameManager.AdvancePlay ();
 	}
 
 	public void CheckOrFold () {
@@ -143,6 +143,6 @@ public class ActionPanelScript : MonoBehaviour {
 			_player.Check ();
 		}
 
-		GameManager.PassToNextPlayer ();
+		GameManager.AdvancePlay ();
 	}
 }

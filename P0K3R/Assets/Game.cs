@@ -96,6 +96,11 @@ public class Player {
 		Card2 = Card.Empty;
 	}
 
+	public void AddCash (int cash) {
+
+		Cash += cash;
+	}
+
 	public void SetBet (int bet) {
 
 		Cash -= bet - Bet;
@@ -105,6 +110,9 @@ public class Player {
 	public void Fold () {
 
 		HasFolded = true;
+
+		CurrentGame.ParticipatingPlayers--;
+
 		PushBetToPot ();
 	}
 
@@ -183,8 +191,10 @@ public class Game {
 
 	public int CurrentCall = 50;
 
-	public int DealerIndex = 0;
-	public int StopIndex = 0;
+	public int DealerIndex = -1;
+	public int StopIndex = -1;
+
+	public int ParticipatingPlayers = 6;
 
 	public Player CurrentPlayer = null;
 
@@ -204,10 +214,10 @@ public class Game {
 
 			Player player = Players[i];
 
-			player.Cash = 500;
-			player.IsActive = true;
 			player.Index = i;
 			player.CurrentGame = this;
+			player.Cash = 1000;
+			player.IsActive = true;
 		}
 
 		SelectRandomDealer ();
@@ -216,6 +226,8 @@ public class Game {
 	}
 
 	public void SetNextPlay () {
+
+		StopIndex = -1;
 
 		ResetDeck ();
 
@@ -228,6 +240,8 @@ public class Game {
 
 			if (!player.IsActive)
 				continue;
+
+			player.HasFolded = false;
 
 			player.Card1 = GetRandomCardFromDeck ();
 		}
@@ -304,12 +318,7 @@ public class Game {
 
 			Phase = (PlayPhase)((int)Phase + 1);
 
-			foreach (Player p in Players) {
-			
-				if (p.IsActive && !p.HasFolded) {
-					p.PushBetToPot ();
-				}
-			}
+			PushAllBetsToPot ();
 
 			index = (DealerIndex + 1) % 6;
 			player = Players [index];
@@ -326,6 +335,69 @@ public class Game {
 		CurrentPlayer = player;
 
 		return CurrentPlayer;
+	}
+
+	public void PushAllBetsToPot () {
+
+		foreach (Player p in Players) {
+
+			if (p.IsActive && !p.HasFolded) {
+				p.PushBetToPot ();
+			}
+		}
+	}
+
+	public void FoldingEndPlay () {
+
+		PushAllBetsToPot ();
+
+		int index = (CurrentPlayer.Index + 1) % 6;
+
+		Player player = Players [index];
+
+		while (!player.IsActive || player.HasFolded) {
+
+			index = (index + 1) % 6;
+			player = Players [index];
+		}
+
+		player.AddCash (Pot);
+		Pot = 0;
+
+		EndPlay ();
+	}
+
+	public void EndPlay () {
+
+		AdvanceDealerButton ();
+
+		SetNextPlay ();
+	}
+
+	public void AdvanceDealerButton () {
+
+		List<Player> activePlayers = new List<Player> ();
+
+		foreach (Player player in Players) {
+
+			if (player.IsActive) {
+
+				activePlayers.Add (player);
+			}
+		}
+
+		int index = (DealerIndex + 1) % 6;
+
+		for (int i = 0; i < activePlayers.Count; i++) {
+
+			activePlayers [i].IsDealer = index == i;
+
+			if (index == i) {
+
+				CurrentPlayer = activePlayers [i];
+				DealerIndex = CurrentPlayer.Index;
+			}
+		}
 	}
 
 	public void ResetDeck () {

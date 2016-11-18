@@ -11,6 +11,8 @@ public class CardScript : MonoBehaviour {
 
 	private Card _currentCard = Card.Empty;
 
+	public bool _revealed = false;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -36,10 +38,14 @@ public class CardScript : MonoBehaviour {
 		} else {
 
 			gameObject.SetActive (true);
+
+			if (_revealed) {
+				SetFace (_currentCard);
+			}
 		}
 	}
 
-	public void Show (bool state) {
+	public void Reveal (bool state) {
 
 		if (_currentCard == Card.Empty)
 			return;
@@ -48,6 +54,8 @@ public class CardScript : MonoBehaviour {
 			SetFace (_currentCard);
 		else
 			SetFace (Card.Back);
+
+		_revealed = state;
 	}
 
 	private void SetFace (Card card) {

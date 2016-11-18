@@ -9,6 +9,8 @@ public class CommunityScript : MonoBehaviour {
 	public CardScript Card4;
 	public CardScript Card5;
 
+	private Community _community;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -19,29 +21,43 @@ public class CommunityScript : MonoBehaviour {
 	
 	}
 
-	public void ShowFlop (bool state) {
+	public void SetCommunity (Community community) {
+
+		_community = community;
+	}
+
+	public void UpdateState () {
+
+		Card1.SetCard (_community.Card1);
+		Card2.SetCard (_community.Card2);
+		Card3.SetCard (_community.Card3);
+		Card4.SetCard (_community.Card4);
+		Card5.SetCard (_community.Card5);
+	}
+
+	public void RevealFlop (bool state) {
 	
-		Card1.Show (state);
-		Card2.Show (state);
-		Card3.Show (state);
+		Card1.Reveal (state);
+		Card2.Reveal (state);
+		Card3.Reveal (state);
 	}
 
-	public void ShowTurn (bool state) {
+	public void RevealTurn (bool state) {
 
-		Card4.Show (state);
+		Card4.Reveal (state);
 	}
 
-	public void ShowRiver (bool state) {
+	public void RevealRiver (bool state) {
 
-		Card5.Show (state);
+		Card5.Reveal (state);
 	}
 
-	public void ShowAllCards (bool state) {
+	public void RevealAllCards (bool state) {
 
-		Card1.Show (state);
-		Card2.Show (state);
-		Card3.Show (state);
-		Card4.Show (state);
-		Card5.Show (state);
+		Card1.Reveal (state);
+		Card2.Reveal (state);
+		Card3.Reveal (state);
+		Card4.Reveal (state);
+		Card5.Reveal (state);
 	}
 }

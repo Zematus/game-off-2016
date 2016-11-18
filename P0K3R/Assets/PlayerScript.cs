@@ -51,10 +51,10 @@ public class PlayerScript : MonoBehaviour {
 		HighlightPanel.SetActive (state);
 	}
 
-	public void ShowCards (bool state) {
+	public void RevealHand (bool state) {
 
-		Card1.Show (true);
-		Card2.Show (true);
+		Card1.Reveal (true);
+		Card2.Reveal (true);
 	}
 
 	public void SetCash (int amount) {

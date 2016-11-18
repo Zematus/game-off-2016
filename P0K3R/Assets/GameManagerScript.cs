@@ -46,20 +46,18 @@ public class GameManagerScript : MonoBehaviour {
 		Player5.UpdateState ();
 		Player6.UpdateState ();
 
-		Community.Card1.SetCard (CurrentGame.Community.Card1);
-		Community.Card2.SetCard (CurrentGame.Community.Card2);
-		Community.Card3.SetCard (CurrentGame.Community.Card3);
-		Community.Card4.SetCard (CurrentGame.Community.Card4);
-		Community.Card5.SetCard (CurrentGame.Community.Card5);
+		Community.SetCommunity (CurrentGame.Community);
 
-		Player1.ShowCards (true);
-		Player2.ShowCards (true);
-		Player3.ShowCards (true);
-		Player4.ShowCards (true);
-		Player5.ShowCards (true);
-		Player6.ShowCards (true);
+		Community.UpdateState ();
 
-		Community.ShowAllCards (false);
+		Player1.RevealHand (true);
+		Player2.RevealHand (true);
+		Player3.RevealHand (true);
+		Player4.RevealHand (true);
+		Player5.RevealHand (true);
+		Player6.RevealHand (true);
+
+		Community.RevealAllCards (false);
 
 		ActionPanel.Setup ();
 		ActionPanel.SetActive (true);
@@ -82,18 +80,26 @@ public class GameManagerScript : MonoBehaviour {
 		PotText.text = "Current Pot: <b>$" + CurrentGame.Pot.ToString () + "</b>";
 	}
 
-	public void PassToNextPlayer () {
+	public void AdvancePlay () {
 
 		ActionPanel.SetActive (false);
 
-		Player player = CurrentGame.SetNextPlayer ();
+		bool continuePlay = true;
 
-		if (player == null)
-			return;
+		if (CurrentGame.ParticipatingPlayers <= 1) {
+		
+			CurrentGame.FoldingEndPlay ();
+			continuePlay = false;
 
-		Community.ShowFlop ((int)CurrentGame.Phase >= (int)PlayPhase.Flop);
-		Community.ShowTurn ((int)CurrentGame.Phase >= (int)PlayPhase.Turn);
-		Community.ShowRiver ((int)CurrentGame.Phase >= (int)PlayPhase.River);
+		} else {
+
+			Player player = CurrentGame.SetNextPlayer ();
+
+			if (player == null) {
+
+				continuePlay = false;
+			}
+		}
 
 		UpdatePotText ();
 
@@ -104,7 +110,25 @@ public class GameManagerScript : MonoBehaviour {
 		Player5.UpdateState ();
 		Player6.UpdateState ();
 
-		ActionPanel.Setup ();
-		ActionPanel.SetActive (true);
+		Community.UpdateState ();
+
+		if (continuePlay) {
+			
+			Community.RevealFlop ((int)CurrentGame.Phase >= (int)PlayPhase.Flop);
+			Community.RevealTurn ((int)CurrentGame.Phase >= (int)PlayPhase.Turn);
+			Community.RevealRiver ((int)CurrentGame.Phase >= (int)PlayPhase.River);
+
+			ActionPanel.Setup ();
+			ActionPanel.SetActive (true);
+
+		} else {
+
+			ResetPlay ();
+		}
+	}
+
+	public void ResetPlay () {
+
+
 	}
 }
