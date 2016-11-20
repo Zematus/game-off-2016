@@ -3,65 +3,74 @@ using System.Collections;
 using System.Collections.Generic;
 
 public enum Card {
+	
+	Empty = -1,
 
-	SpadesA = 0,
-	Spades2 = 1,
-	Spades3 = 2,
-	Spades4 = 3,
-	Spades5 = 4,
-	Spades6 = 5,
-	Spades7 = 6,
-	Spades8 = 7,
-	Spades9 = 8,
-	Spades10 = 9,
-	SpadesJ = 10,
-	SpadesQ = 11,
-	SpadesK = 12,
+	Spades2 = 0,
+	Spades3 = 1,
+	Spades4 = 2,
+	Spades5 = 3,
+	Spades6 = 4,
+	Spades7 = 5,
+	Spades8 = 6,
+	Spades9 = 7,
+	Spades10 = 8,
+	SpadesJ = 9,
+	SpadesQ = 10,
+	SpadesK = 11,
+	SpadesA = 12,
 
-	HeartsA = 13,
-	Hearts2 = 14,
-	Hearts3 = 15,
-	Hearts4 = 16,
-	Hearts5 = 17,
-	Hearts6 = 18,
-	Hearts7 = 19,
-	Hearts8 = 20,
-	Hearts9 = 21,
-	Hearts10 = 22,
-	HeartsJ = 23,
-	HeartsQ = 24,
-	HeartsK = 25,
+	Hearts2 = 13,
+	Hearts3 = 14,
+	Hearts4 = 15,
+	Hearts5 = 16,
+	Hearts6 = 17,
+	Hearts7 = 18,
+	Hearts8 = 19,
+	Hearts9 = 20,
+	Hearts10 = 21,
+	HeartsJ = 22,
+	HeartsQ = 23,
+	HeartsK = 24,
+	HeartsA = 25,
 
-	ClubsA = 26,
-	Clubs2 = 27,
-	Clubs3 = 28,
-	Clubs4 = 29,
-	Clubs5 = 30,
-	Clubs6 = 31,
-	Clubs7 = 32,
-	Clubs8 = 33,
-	Clubs9 = 34,
-	Clubs10 = 35,
-	ClubsJ = 36,
-	ClubsQ = 37,
-	ClubsK = 38,
+	Clubs2 = 26,
+	Clubs3 = 27,
+	Clubs4 = 28,
+	Clubs5 = 29,
+	Clubs6 = 30,
+	Clubs7 = 31,
+	Clubs8 = 32,
+	Clubs9 = 33,
+	Clubs10 = 34,
+	ClubsJ = 35,
+	ClubsQ = 36,
+	ClubsK = 37,
+	ClubsA = 38,
 
-	DiamondsA = 39,
-	Diamonds2 = 40,
-	Diamonds3 = 41,
-	Diamonds4 = 42,
-	Diamonds5 = 43,
-	Diamonds6 = 44,
-	Diamonds7 = 45,
-	Diamonds8 = 46,
-	Diamonds9 = 47,
-	Diamonds10 = 48,
-	DiamondsJ = 49,
-	DiamondsQ = 50,
-	DiamondsK = 51,
+	Diamonds2 = 39,
+	Diamonds3 = 40,
+	Diamonds4 = 41,
+	Diamonds5 = 42,
+	Diamonds6 = 43,
+	Diamonds7 = 44,
+	Diamonds8 = 45,
+	Diamonds9 = 46,
+	Diamonds10 = 47,
+	DiamondsJ = 48,
+	DiamondsQ = 49,
+	DiamondsK = 50,
+	DiamondsA = 51,
 
-	Back = 52,
-	Empty = 53
+	Back = 52
+}
+
+public enum Suit {
+
+	Spades = 0,
+	Hearts = 1,
+	Clubs = 2,
+	Diamonds =3
 }
 
 public enum PlayPhase {
@@ -463,5 +472,383 @@ public class Game {
 	public void AddToPot (int value) {
 
 		Pot += value;
+	}
+
+	public int CompareHands (List<Card> hand1, List<Card> hand2) {
+
+		List<Card> straightFlush1 = GetStraightFlush (hand1);
+		List<Card> straightFlush2 = GetStraightFlush (hand2);
+	
+		if (straightFlush1 != null) {
+
+			if (straightFlush2 != null) {
+			
+				return CompareCardsByValue (straightFlush1 [0], straightFlush2 [0]);
+			}
+
+			return 1;
+		}
+
+		if (straightFlush2 != null) {
+		
+			return -1;
+		}
+
+		List<List<Card>> allSets1 = GetAllSetsOfAKind (hand1);
+		List<List<Card>> allSets2 = GetAllSetsOfAKind (hand2);
+
+		if (HasFourOfAKind (allSets1) || HasFourOfAKind (allSets2)) {
+		
+			return CompareAllSetsOfAKind (allSets1, allSets2);
+		}
+
+		if (HasFullHouse (allSets1)) {
+
+			if (HasFullHouse (allSets2)) {
+			
+				return CompareAllSetsOfAKind (allSets1, allSets2);
+			}
+
+			return 1;
+		}
+
+		if (HasFullHouse (allSets2)) {
+		
+			return -1;
+		}
+
+		List<Card> straight1 = GetStraight (hand1);
+		List<Card> straight2 = GetStraight (hand2);
+
+		if (straight1 != null) {
+
+			if (straight2 != null) {
+
+				return CompareCardsByValue (straight1 [0], straight2 [0]);
+			}
+
+			return 1;
+		}
+
+		if (straight2 != null) {
+
+			return -1;
+		}
+
+		List<Card> flush1 = GetFlush (hand1);
+		List<Card> flush2 = GetFlush (hand2);
+
+		if (flush1 != null) {
+
+			if (flush2 != null) {
+
+				return CompareCardsByValue (flush1 [0], flush2 [0]);
+			}
+
+			return 1;
+		}
+
+		if (flush2 != null) {
+
+			return -1;
+		}
+
+		return CompareAllSetsOfAKind (allSets1, allSets2);
+	}
+
+	public bool HasFourOfAKind (List<List<Card>> allSets) {
+	
+		return (allSets [0].Count == 4);
+	}
+
+	public bool HasFullHouse (List<List<Card>> allSets) {
+
+		return (allSets [0].Count == 3) && (allSets [1].Count == 2);
+	}
+
+	public bool HasThreeOfAKind (List<List<Card>> allSets) {
+
+		return (allSets [0].Count == 3) && (allSets [1].Count == 1);
+	}
+
+	public bool HasTwoPair (List<List<Card>> allSets) {
+
+		return (allSets [0].Count == 2) && (allSets [1].Count == 2);
+	}
+
+	public bool HasOnePair (List<List<Card>> allSets) {
+
+		return (allSets [0].Count == 2) && (allSets [1].Count == 1);
+	}
+
+	public int CompareAllSetsOfAKind (List<List<Card>> allSets1, List<List<Card>> allSets2) {
+
+		int setIndex = 0;
+
+		while ((setIndex < allSets1.Count) && (setIndex < allSets2.Count)) {
+		
+			List<Card> set1 = allSets1 [setIndex];
+			List<Card> set2 = allSets2 [setIndex];
+
+			int compRes = CompareSetsOfAKind (set1, set2);
+
+			if (compRes != 0)
+				return compRes;
+
+			setIndex++;
+		}
+
+		return 0;
+	}
+
+	public int CompareSetsOfAKind (List<Card> set1, List<Card> set2) {
+	
+		if (set1.Count > set2.Count)
+			return 1;
+
+		if (set1.Count < set2.Count)
+			return -1;
+
+		return CompareCardsByValue (set1 [0], set2 [0]);
+	}
+
+	public List<List<Card>> GetAllSetsOfAKind (List<Card> hand) {
+	
+		List<List<Card>> setsOfAKind = new List<List<Card>> (7);
+		List<Card> remainingCards = new List<Card> (hand);
+
+		while (remainingCards.Count > 0) {
+		
+			List<Card> setOfAKind = GetSetOfAKind (remainingCards);
+
+			setsOfAKind.Add (setOfAKind);
+		}
+
+		setsOfAKind.Sort (CompareSetsOfAKind);
+
+		List<List<Card>> allSetsOfAKind = new List<List<Card>> (5);
+
+		int count = 0;
+
+		foreach (List<Card> setOfAKind in setsOfAKind) {
+
+			if (count >= 5)
+				break;
+		
+			count += setOfAKind.Count;
+
+			int overflow = Mathf.Max (0, count - 5);
+
+			if (overflow > 0) {
+			
+				setOfAKind.RemoveRange (setOfAKind.Count - overflow, overflow);
+			}
+
+			allSetsOfAKind.Add (setOfAKind);
+		}
+
+		return allSetsOfAKind;
+	}
+
+	public List<Card> GetSetOfAKind (List<Card> remainingCards) {
+
+		List<Card> setOfAKind = new List<Card>(4);
+
+		bool first = true;
+		int count = 0;
+
+		Card[] cards = remainingCards.ToArray ();
+
+		foreach (Card card in cards) {
+
+			if (first) {
+				
+				setOfAKind.Add (card);
+				count++;
+
+				remainingCards.Remove (card);
+
+				first = false;
+				continue;
+			}
+		
+			if (GetCardValue (setOfAKind [0]) == GetCardValue (card)) {
+
+				setOfAKind.Add (card);
+				count++;
+
+				remainingCards.Remove (card);
+				continue;
+			}
+
+			return setOfAKind;
+		}
+
+		return setOfAKind;
+	}
+
+	public int GetCardValue (Card card) {
+	
+		return 2 + ((int)card % 13);
+	}
+
+	public List<Card> GetStraightFlush (List<Card> hand) {
+
+		List<Card> tempHand = GetFlush (hand);
+
+		if (tempHand == null)
+			return null;
+
+		return GetStraight (tempHand);
+	}
+
+	public Suit GetCardSuit (Card card) {
+
+		return (Suit)((int)card / 13);
+	}
+
+	public List<Card> GetFlush (List<Card> hand) {
+
+		List<Card> hand2 = new List<Card> (hand);
+
+		hand2.Sort (CompareCardsBySuit);
+
+		List<Card> flush = new List<Card> (5);
+
+		Suit lastSuit = GetCardSuit (hand2 [0]);
+		int count = 1;
+
+		flush.Add (hand2 [0]);
+
+		foreach (Card card in hand2) {
+
+			Suit suit = GetCardSuit (card);
+
+			if (lastSuit == suit) {
+
+				flush.Add (card);
+				count++;
+
+				if (count == 5) {
+				
+					return flush;
+				}
+
+				continue;
+			}
+
+			flush.Clear ();
+
+			lastSuit = suit;
+			count = 1;
+
+			flush.Add (card);
+		}
+
+		return null;
+	}
+
+	public List<Card> GetStraight (List<Card> hand) {
+
+		List<Card> straight = new List<Card> (5);
+
+		int lastCardValue = GetCardValue (hand [0]);
+		int count = 1;
+
+		bool firstIsAce = lastCardValue == 14;
+
+		straight.Add (hand [0]);
+
+		foreach (Card card in hand) {
+
+			int cardValue = GetCardValue (card);
+
+			if (lastCardValue == cardValue)
+				continue;
+
+			if (lastCardValue == (cardValue + 1)) {
+			
+				lastCardValue--;
+				count++;
+
+				straight.Add (card);
+
+				if (count == 5)
+					return straight;
+
+				if (cardValue == 2) {
+					
+					if (firstIsAce) {
+
+						count++;
+
+						straight.Add (hand [0]);
+					}
+
+					if (count == 5)
+						return straight;
+
+					return null;
+				}
+
+				continue;
+			}
+
+			straight.Clear ();
+			straight.Add (card);
+			count = 1;
+
+			lastCardValue = cardValue;
+		}
+
+		return null;
+	}
+
+	public int CompareCardsByValue (Card a, Card b) {
+
+		int aValue = GetCardValue (a);
+		int bValue = GetCardValue (b);
+
+		if (aValue > bValue)
+			return 1;
+
+		if (aValue < bValue)
+			return -1;
+
+		return 0;
+	}
+
+	public int CompareCardsBySuit (Card a, Card b) {
+
+		Suit aSuit = GetCardSuit (a);
+		Suit bSuit = GetCardSuit (b);
+
+		if ((int)aSuit > (int)bSuit)
+			return 1;
+
+		if ((int)aSuit < (int)bSuit)
+			return -1;
+
+		return 0;
+	}
+
+	public int CompareCards (Card a, Card b) {
+
+		int aValue = GetCardValue (a);
+		int bValue = GetCardValue (b);
+
+		if (aValue > bValue)
+			return 1;
+
+		if (aValue < bValue)
+			return -1;
+
+		if ((int)a > (int)b)
+			return 1;
+
+		if ((int)a < (int)b)
+			return -1;
+
+		return 0;
 	}
 }
