@@ -320,9 +320,9 @@ public class Game {
 			CurrentCall = 0;
 
 			if (Phase == PlayPhase.River) {
-			
-				CurrentPlayer = null;
-				return CurrentPlayer;
+
+				CurrentPlayer = player;
+				return null;
 			}
 
 			Phase = (PlayPhase)((int)Phase + 1);
@@ -374,6 +374,73 @@ public class Game {
 		Pot = 0;
 
 		EndPlay ();
+	}
+
+	public void ShowdownEndPlay () {
+
+		PushAllBetsToPot ();
+
+		List<Card> bestHand = null;
+		List<Player> bestPlayers = new List<Player> (6);
+
+		foreach (Player player in Players) {
+
+			if (bestHand == null) {
+			
+				bestHand = GetPlayerHand (player);
+				bestPlayers.Add (player);
+			} else {
+			
+				List<Card> hand = GetPlayerHand (player);
+				int result = CompareHands (bestHand, hand);
+
+				if (result == 0) {
+				
+					bestPlayers.Add (player);
+
+				} else if (result == 1) {
+				
+					bestPlayers.Clear ();
+
+					bestHand = hand;
+					bestPlayers.Add (player);
+				}
+			}
+		}
+
+		int winInTokens = Pot / (bestPlayers.Count * SmallBlind);
+
+		foreach (Player player in bestPlayers) {
+
+			int cash = winInTokens * SmallBlind;
+			Pot -= cash;
+
+			player.AddCash (cash);
+		}
+
+		bestPlayers [0].AddCash (Pot);
+
+		Pot = 0;
+
+		EndPlay ();
+	}
+
+	public List<Card> GetPlayerHand (Player player) {
+	
+		List<Card> hand = new List<Card> (7);
+
+		hand.Add (player.Card1);
+		hand.Add (player.Card2);
+
+		hand.Add (Community.Card1);
+		hand.Add (Community.Card2);
+		hand.Add (Community.Card3);
+		hand.Add (Community.Card4);
+		hand.Add (Community.Card5);
+
+		hand.Sort (CompareCardsByValue);
+
+		return hand;
 	}
 
 	public void EndPlay () {
@@ -486,12 +553,12 @@ public class Game {
 				return CompareCardsByValue (straightFlush1 [0], straightFlush2 [0]);
 			}
 
-			return 1;
+			return -1;
 		}
 
 		if (straightFlush2 != null) {
 		
-			return -1;
+			return 1;
 		}
 
 		List<List<Card>> allSets1 = GetAllSetsOfAKind (hand1);
@@ -509,12 +576,12 @@ public class Game {
 				return CompareAllSetsOfAKind (allSets1, allSets2);
 			}
 
-			return 1;
+			return -1;
 		}
 
 		if (HasFullHouse (allSets2)) {
 		
-			return -1;
+			return 1;
 		}
 
 		List<Card> straight1 = GetStraight (hand1);
@@ -527,12 +594,12 @@ public class Game {
 				return CompareCardsByValue (straight1 [0], straight2 [0]);
 			}
 
-			return 1;
+			return -1;
 		}
 
 		if (straight2 != null) {
 
-			return -1;
+			return 1;
 		}
 
 		List<Card> flush1 = GetFlush (hand1);
@@ -545,12 +612,12 @@ public class Game {
 				return CompareCardsByValue (flush1 [0], flush2 [0]);
 			}
 
-			return 1;
+			return -1;
 		}
 
 		if (flush2 != null) {
 
-			return -1;
+			return 1;
 		}
 
 		return CompareAllSetsOfAKind (allSets1, allSets2);
@@ -604,10 +671,10 @@ public class Game {
 	public int CompareSetsOfAKind (List<Card> set1, List<Card> set2) {
 	
 		if (set1.Count > set2.Count)
-			return 1;
+			return -1;
 
 		if (set1.Count < set2.Count)
-			return -1;
+			return 1;
 
 		return CompareCardsByValue (set1 [0], set2 [0]);
 	}
@@ -810,10 +877,10 @@ public class Game {
 		int bValue = GetCardValue (b);
 
 		if (aValue > bValue)
-			return 1;
+			return -1;
 
 		if (aValue < bValue)
-			return -1;
+			return 1;
 
 		return 0;
 	}
@@ -824,10 +891,10 @@ public class Game {
 		Suit bSuit = GetCardSuit (b);
 
 		if ((int)aSuit > (int)bSuit)
-			return 1;
+			return -1;
 
 		if ((int)aSuit < (int)bSuit)
-			return -1;
+			return 1;
 
 		return 0;
 	}
@@ -838,16 +905,16 @@ public class Game {
 		int bValue = GetCardValue (b);
 
 		if (aValue > bValue)
-			return 1;
+			return -1;
 
 		if (aValue < bValue)
-			return -1;
-
-		if ((int)a > (int)b)
 			return 1;
 
-		if ((int)a < (int)b)
+		if ((int)a > (int)b)
 			return -1;
+
+		if ((int)a < (int)b)
+			return 1;
 
 		return 0;
 	}

@@ -97,6 +97,7 @@ public class GameManagerScript : MonoBehaviour {
 
 			if (player == null) {
 
+				TriggerShowdown ();
 				continuePlay = false;
 			}
 		}
@@ -125,6 +126,17 @@ public class GameManagerScript : MonoBehaviour {
 
 			ResetPlay ();
 		}
+	}
+
+	public void TriggerShowdown () {
+
+		CurrentGame.Phase = PlayPhase.River;
+
+		Community.RevealFlop (true);
+		Community.RevealTurn (true);
+		Community.RevealRiver (true);
+
+		CurrentGame.ShowdownEndPlay ();
 	}
 
 	public void ResetPlay () {
