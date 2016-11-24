@@ -20,6 +20,8 @@ public class GameManagerScript : MonoBehaviour {
 
 	public ActionPanelScript ActionPanel;
 
+	public ResultPanelScript ResultPanel;
+
 	public static Game CurrentGame = new Game ();
 
 	// Use this for initialization
@@ -28,6 +30,7 @@ public class GameManagerScript : MonoBehaviour {
 		CurrentGame.Initialize ();
 
 		ActionPanel.SetActive (false);
+		ResultPanel.SetActive (false);
 
 		UpdateBetBlindTexts ();
 		UpdatePotText ();
