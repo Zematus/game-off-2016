@@ -51,6 +51,7 @@
      <Compile Include="Assets\Game.cs" />
      <Compile Include="Assets\GameManagerScript.cs" />
      <Compile Include="Assets\HandPanelScript.cs" />
+     <Compile Include="Assets\Player.cs" />
      <Compile Include="Assets\PlayerScript.cs" />
      <Compile Include="Assets\ResultPanelScript.cs" />
  <Reference Include="UnityEngine.UI">

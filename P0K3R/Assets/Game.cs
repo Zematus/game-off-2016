@@ -81,78 +81,6 @@ public enum PlayPhase {
 	River = 3
 }
 
-public class Player {
-
-	public Game CurrentGame;
-
-	public int Index;
-
-	public Card Card1;
-	public Card Card2;
-
-	public int Cash = 0;
-
-	public bool IsActive = false;
-	public bool IsDealer = false;
-	public bool HasFolded = false;
-	public bool HasRaised = false;
-
-	public int Bet = 0;
-
-	public void Reset () {
-	
-		Card1 = Card.Empty;
-		Card2 = Card.Empty;
-	}
-
-	public void AddCash (int cash) {
-
-		Cash += cash;
-	}
-
-	public void SetBet (int bet) {
-
-		Cash -= bet - Bet;
-		Bet = bet;
-	}
-
-	public void Fold () {
-
-		HasFolded = true;
-
-		CurrentGame.ParticipatingPlayers--;
-
-		PushBetToPot ();
-	}
-
-	public void PushBetToPot () {
-
-		CurrentGame.AddToPot (Bet);
-
-		HasRaised = false;
-		Bet = 0;
-	}
-
-	public void Raise (int newValue) {
-
-		HasRaised = true;
-		SetBet (newValue);
-		CurrentGame.SetCall (Bet);
-		CurrentGame.StopIndex = Index;
-	}
-
-	public void Call (int newValue) {
-
-		HasRaised = false;
-		SetBet (newValue);
-	}
-
-	public void Check () {
-
-		HasRaised = false;
-	}
-}
-
 public class Community {
 
 	public Card Card1;
@@ -207,6 +135,8 @@ public class Game {
 
 	public Player CurrentPlayer = null;
 
+	public List<Player> WinningPlayers = null;
+
 	public Game () {
 	
 		Players [0] = Player1;
@@ -246,11 +176,10 @@ public class Game {
 			int index = (i + DealerIndex) % 6;
 
 			Player player = Players[index];
+			player.Reset ();
 
 			if (!player.IsActive)
 				continue;
-
-			player.HasFolded = false;
 
 			player.Card1 = GetRandomCardFromDeck ();
 		}
@@ -373,7 +302,8 @@ public class Game {
 		player.AddCash (Pot);
 		Pot = 0;
 
-		EndPlay ();
+		WinningPlayers = new List<Player> (1);
+		WinningPlayers.Add (player);
 	}
 
 	public void ShowdownEndPlay () {
@@ -381,36 +311,36 @@ public class Game {
 		PushAllBetsToPot ();
 
 		List<Card> bestHand = null;
-		List<Player> bestPlayers = new List<Player> (6);
+		WinningPlayers = new List<Player> (6);
 
 		foreach (Player player in Players) {
 
 			if (bestHand == null) {
 			
-				bestHand = GetPlayerHand (player);
-				bestPlayers.Add (player);
+				bestHand = player.BuildBestHand ();
+				WinningPlayers.Add (player);
 			} else {
 			
-				List<Card> hand = GetPlayerHand (player);
+				List<Card> hand = player.BuildBestHand ();
 				int result = CompareHands (bestHand, hand);
 
 				if (result == 0) {
 				
-					bestPlayers.Add (player);
+					WinningPlayers.Add (player);
 
 				} else if (result == 1) {
 				
-					bestPlayers.Clear ();
+					WinningPlayers.Clear ();
 
 					bestHand = hand;
-					bestPlayers.Add (player);
+					WinningPlayers.Add (player);
 				}
 			}
 		}
 
-		int winInTokens = Pot / (bestPlayers.Count * SmallBlind);
+		int winInTokens = Pot / (WinningPlayers.Count * SmallBlind);
 
-		foreach (Player player in bestPlayers) {
+		foreach (Player player in WinningPlayers) {
 
 			int cash = winInTokens * SmallBlind;
 			Pot -= cash;
@@ -418,32 +348,13 @@ public class Game {
 			player.AddCash (cash);
 		}
 
-		bestPlayers [0].AddCash (Pot);
-
+		WinningPlayers [0].AddCash (Pot);
 		Pot = 0;
-
-		EndPlay ();
-	}
-
-	public List<Card> GetPlayerHand (Player player) {
-	
-		List<Card> hand = new List<Card> (7);
-
-		hand.Add (player.Card1);
-		hand.Add (player.Card2);
-
-		hand.Add (Community.Card1);
-		hand.Add (Community.Card2);
-		hand.Add (Community.Card3);
-		hand.Add (Community.Card4);
-		hand.Add (Community.Card5);
-
-		hand.Sort (CompareCardsByValue);
-
-		return hand;
 	}
 
 	public void EndPlay () {
+
+		Phase = PlayPhase.Start;
 
 		AdvanceDealerButton ();
 
@@ -541,7 +452,7 @@ public class Game {
 		Pot += value;
 	}
 
-	public int CompareHands (List<Card> hand1, List<Card> hand2) {
+	public static int CompareHands (List<Card> hand1, List<Card> hand2) {
 
 		List<Card> straightFlush1 = GetStraightFlush (hand1);
 		List<Card> straightFlush2 = GetStraightFlush (hand2);
@@ -623,32 +534,32 @@ public class Game {
 		return CompareAllSetsOfAKind (allSets1, allSets2);
 	}
 
-	public bool HasFourOfAKind (List<List<Card>> allSets) {
+	public static bool HasFourOfAKind (List<List<Card>> allSets) {
 	
 		return (allSets [0].Count == 4);
 	}
 
-	public bool HasFullHouse (List<List<Card>> allSets) {
+	public static bool HasFullHouse (List<List<Card>> allSets) {
 
 		return (allSets [0].Count == 3) && (allSets [1].Count == 2);
 	}
 
-	public bool HasThreeOfAKind (List<List<Card>> allSets) {
+	public static bool HasThreeOfAKind (List<List<Card>> allSets) {
 
 		return (allSets [0].Count == 3) && (allSets [1].Count == 1);
 	}
 
-	public bool HasTwoPair (List<List<Card>> allSets) {
+	public static bool HasTwoPair (List<List<Card>> allSets) {
 
 		return (allSets [0].Count == 2) && (allSets [1].Count == 2);
 	}
 
-	public bool HasOnePair (List<List<Card>> allSets) {
+	public static bool HasOnePair (List<List<Card>> allSets) {
 
 		return (allSets [0].Count == 2) && (allSets [1].Count == 1);
 	}
 
-	public int CompareAllSetsOfAKind (List<List<Card>> allSets1, List<List<Card>> allSets2) {
+	public static int CompareAllSetsOfAKind (List<List<Card>> allSets1, List<List<Card>> allSets2) {
 
 		int setIndex = 0;
 
@@ -668,7 +579,7 @@ public class Game {
 		return 0;
 	}
 
-	public int CompareSetsOfAKind (List<Card> set1, List<Card> set2) {
+	public static int CompareSetsOfAKind (List<Card> set1, List<Card> set2) {
 	
 		if (set1.Count > set2.Count)
 			return -1;
@@ -679,7 +590,7 @@ public class Game {
 		return CompareCardsByValue (set1 [0], set2 [0]);
 	}
 
-	public List<List<Card>> GetAllSetsOfAKind (List<Card> hand) {
+	public static List<List<Card>> GetAllSetsOfAKind (List<Card> hand) {
 	
 		List<List<Card>> setsOfAKind = new List<List<Card>> (7);
 		List<Card> remainingCards = new List<Card> (hand);
@@ -717,7 +628,7 @@ public class Game {
 		return allSetsOfAKind;
 	}
 
-	public List<Card> GetSetOfAKind (List<Card> remainingCards) {
+	public static List<Card> GetSetOfAKind (List<Card> remainingCards) {
 
 		List<Card> setOfAKind = new List<Card>(4);
 
@@ -754,12 +665,12 @@ public class Game {
 		return setOfAKind;
 	}
 
-	public int GetCardValue (Card card) {
-	
+	public static int GetCardValue (Card card) {
+
 		return 2 + ((int)card % 13);
 	}
 
-	public List<Card> GetStraightFlush (List<Card> hand) {
+	public static List<Card> GetStraightFlush (List<Card> hand) {
 
 		List<Card> tempHand = GetFlush (hand);
 
@@ -769,12 +680,12 @@ public class Game {
 		return GetStraight (tempHand);
 	}
 
-	public Suit GetCardSuit (Card card) {
+	public static Suit GetCardSuit (Card card) {
 
 		return (Suit)((int)card / 13);
 	}
 
-	public List<Card> GetFlush (List<Card> hand) {
+	public static List<Card> GetFlush (List<Card> hand) {
 
 		List<Card> hand2 = new List<Card> (hand);
 
@@ -815,7 +726,7 @@ public class Game {
 		return null;
 	}
 
-	public List<Card> GetStraight (List<Card> hand) {
+	public static List<Card> GetStraight (List<Card> hand) {
 
 		List<Card> straight = new List<Card> (5);
 
@@ -871,7 +782,7 @@ public class Game {
 		return null;
 	}
 
-	public int CompareCardsByValue (Card a, Card b) {
+	public static int CompareCardsByValue (Card a, Card b) {
 
 		int aValue = GetCardValue (a);
 		int bValue = GetCardValue (b);
@@ -885,7 +796,7 @@ public class Game {
 		return 0;
 	}
 
-	public int CompareCardsBySuit (Card a, Card b) {
+	public static int CompareCardsBySuit (Card a, Card b) {
 
 		Suit aSuit = GetCardSuit (a);
 		Suit bSuit = GetCardSuit (b);
@@ -899,7 +810,7 @@ public class Game {
 		return 0;
 	}
 
-	public int CompareCards (Card a, Card b) {
+	public static int CompareCards (Card a, Card b) {
 
 		int aValue = GetCardValue (a);
 		int bValue = GetCardValue (b);

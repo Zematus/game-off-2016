@@ -24,36 +24,34 @@ public class HandPanelScript : MonoBehaviour {
 	
 	}
 
-	public void Initialize (Player player, List<Card> hand, int earnings) {
+	public void Initialize (Player player) {
 	
 		PlayerText.text = "Player " + player.Index;
 
-		Card1.SetCard (hand [0]);
-		Card2.SetCard (hand [1]);
-		Card3.SetCard (hand [2]);
-		Card4.SetCard (hand [3]);
-		Card5.SetCard (hand [4]);
+		bool hasBestHand = player.BestHand != null;
 
-		Card1.Reveal (true);
-		Card2.Reveal (true);
-		Card3.Reveal (true);
-		Card4.Reveal (true);
-		Card5.Reveal (true);
+		Card1.SetActive (hasBestHand);
+		Card2.SetActive (hasBestHand);
+		Card3.SetActive (hasBestHand);
+		Card4.SetActive (hasBestHand);
+		Card5.SetActive (hasBestHand);
 
-		EarningsText.text = "$" + earnings.ToString ();
-	}
+		if (hasBestHand) {
 
-	public void Initialize (Player player, int earnings) {
+			Card1.SetCard (player.BestHand [0]);
+			Card2.SetCard (player.BestHand [1]);
+			Card3.SetCard (player.BestHand [2]);
+			Card4.SetCard (player.BestHand [3]);
+			Card5.SetCard (player.BestHand [4]);
+		}
 
-		PlayerText.text = "Player " + player.Index;
+		Card1.Reveal (hasBestHand);
+		Card2.Reveal (hasBestHand);
+		Card3.Reveal (hasBestHand);
+		Card4.Reveal (hasBestHand);
+		Card5.Reveal (hasBestHand);
 
-		Card1.SetActive (false);
-		Card2.SetActive (false);
-		Card3.SetActive (false);
-		Card4.SetActive (false);
-		Card5.SetActive (false);
-
-		EarningsText.text = "$" + earnings.ToString ();
+		EarningsText.text = "$" + player.Earnings.ToString ();
 	}
 
 	public void SetActive (bool state) {

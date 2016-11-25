@@ -91,7 +91,7 @@ public class GameManagerScript : MonoBehaviour {
 
 		if (CurrentGame.ParticipatingPlayers <= 1) {
 		
-			CurrentGame.FoldingEndPlay ();
+			TriggerFoldingEnd ();
 			continuePlay = false;
 
 		} else {
@@ -100,7 +100,7 @@ public class GameManagerScript : MonoBehaviour {
 
 			if (player == null) {
 
-				TriggerShowdown ();
+				TriggerShowdownEnd ();
 				continuePlay = false;
 			}
 		}
@@ -125,13 +125,21 @@ public class GameManagerScript : MonoBehaviour {
 			ActionPanel.Setup ();
 			ActionPanel.SetActive (true);
 
-		} else {
-
-			ResetPlay ();
 		}
 	}
 
-	public void TriggerShowdown () {
+	public void TriggerFoldingEnd () {
+
+		CurrentGame.FoldingEndPlay ();
+
+		ResultPanel.Initialize (1);
+
+		ResultPanel.SetPlayer (CurrentGame.WinningPlayers [0], 0);
+
+		ResultPanel.SetActive (true);
+	}
+
+	public void TriggerShowdownEnd () {
 
 		CurrentGame.Phase = PlayPhase.River;
 
@@ -140,10 +148,36 @@ public class GameManagerScript : MonoBehaviour {
 		Community.RevealRiver (true);
 
 		CurrentGame.ShowdownEndPlay ();
+
+		ResultPanel.Initialize (CurrentGame.WinningPlayers.Count);
+
+		for (int i = 0; i < CurrentGame.WinningPlayers.Count; i++) {
+			ResultPanel.SetPlayer (CurrentGame.WinningPlayers [i], i);
+		}
+
+		ResultPanel.SetActive (true);
 	}
 
 	public void ResetPlay () {
+		
+		ResultPanel.SetActive (false);
 
+		CurrentGame.EndPlay ();
 
+		UpdatePotText ();
+
+		Player1.UpdateState ();
+		Player2.UpdateState ();
+		Player3.UpdateState ();
+		Player4.UpdateState ();
+		Player5.UpdateState ();
+		Player6.UpdateState ();
+
+		Community.UpdateState ();
+
+		Community.RevealAllCards (false);
+
+		ActionPanel.Setup ();
+		ActionPanel.SetActive (true);
 	}
 }

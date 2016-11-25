@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class ResultPanelScript : MonoBehaviour {
 
+	public Text ResultText;
+
 	public HandPanelScript HandPanelPrefab;
 
 	public Button ContinueButton;
@@ -23,6 +25,12 @@ public class ResultPanelScript : MonoBehaviour {
 
 	public void Initialize (int playerCount) {
 
+		if (playerCount > 1) {
+			ResultText.text = "Pot Winners";
+		} else {
+			ResultText.text = "Pot Winner";
+		}
+
 		_handPanels = new HandPanelScript[playerCount];
 
 		Vector3 localScale = HandPanelPrefab.transform.localScale;
@@ -32,6 +40,8 @@ public class ResultPanelScript : MonoBehaviour {
 
 			handPanel.transform.SetParent (gameObject.transform);
 			handPanel.transform.localScale = localScale;
+
+			_handPanels [i] = handPanel;
 		}
 
 		HandPanelPrefab.SetActive (false);
@@ -45,13 +55,8 @@ public class ResultPanelScript : MonoBehaviour {
 		gameObject.SetActive (state);
 	}
 
-	public void SetPlayer (Player player, List<Card> hand, int earnings, int index) {
+	public void SetPlayer (Player player, int index) {
 	
-		_handPanels [index].Initialize (player, hand, earnings);
-	}
-
-	public void SetPlayer (Player player, int earnings, int index) {
-
-		_handPanels [index].Initialize (player, earnings);
+		_handPanels [index].Initialize (player);
 	}
 }
